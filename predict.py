@@ -56,10 +56,11 @@ def testIm(file):
         y1 = int(box[1]*h)
         y2 = int(box[3]*h)
         print(x1, y1, x2, y2, w, h)
-        cv2.rectangle(im,(x1,y1),(x2,y2),(0,255,0),2)
-        cv2.putText(im, str(probs[i]), (x1,y1), font, 0.4, (0,0,255))
+        cv2.rectangle(im,(x1,y1+4),(x2,y2),(0,255,0),2)
+        cv2.putText(im, str(probs[i]), (x1,y1), font, 0.4, (0,255,0))
     cv2.imshow('photo', im)
     cv2.waitKey(0)
+    return im
 
 def testImList(path, file_name):
     with open(path+file_name) as f:
@@ -127,13 +128,14 @@ if __name__ == '__main__':
 
     # given image path, predict and show
     fddb_path = "/home/lxg/codedata/fddb/2002/07/19/big/"
-    picture = 'img_90.jpg'
-    # testIm(fddb_path + picture)
+    picture = 'img_463.jpg'
+    im = testIm(fddb_path + picture)
+    cv2.imwrite('picture/'+picture, im)
 
     # given image file list, predict and show
     path = '/home/lxg/codedata/fddb/'
     file_name = 'FDDB-folds/FDDB-fold-01.txt'
-    testImList(path, file_name)
+    # testImList(path, file_name)
 
     # get fddb preddict and write them to predict.txt
     path = '/home/lxg/codedata/fddb/'
