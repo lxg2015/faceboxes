@@ -1,4 +1,4 @@
-*.jpg
+/*.jpg
 weight/*
 __pycache__/*
 label/*
