@@ -1,0 +1,7 @@
+*.jpg
+weight/*
+__pycache__/*
+label/*
+*.pyc
+*.sh
+
