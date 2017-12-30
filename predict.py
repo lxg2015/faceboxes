@@ -70,6 +70,10 @@ def testImList(path, file_name):
         testIm(path+item.strip()+'.jpg')
 
 def saveFddbData(path, file_name):
+    '''
+    Args:
+        file_name: fddb image list
+    '''
     with open(path+file_name) as f:
         file_list = f.readlines()
     f_write = open(path+'predict.txt', 'w')
@@ -109,7 +113,6 @@ def getFddbList(path, file_name):
 
 if __name__ == '__main__':
     net = FaceBox()
-    # net.load_state_dict(torch.load('weight/faceboxes200.pt', map_location=lambda storage, loc:storage))
     net.load_state_dict(torch.load('weight/faceboxes.pt', map_location=lambda storage, loc:storage))
     
     net.eval()
@@ -129,8 +132,8 @@ if __name__ == '__main__':
     # given image path, predict and show
     fddb_path = "/home/lxg/codedata/fddb/2002/07/19/big/"
     picture = 'img_463.jpg'
-    im = testIm(fddb_path + picture)
-    cv2.imwrite('picture/'+picture, im)
+    # im = testIm(fddb_path + picture)
+    # cv2.imwrite('picture/'+picture, im)
 
     # given image file list, predict and show
     path = '/home/lxg/codedata/fddb/'
@@ -140,5 +143,5 @@ if __name__ == '__main__':
     # get fddb preddict and write them to predict.txt
     path = '/home/lxg/codedata/fddb/'
     file_name = 'fddb.txt'
-    # saveFddbData(path, file_name)
+    saveFddbData(path, file_name)
     # getFddbList(path, file_name)

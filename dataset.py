@@ -28,7 +28,7 @@ class ListDataset(data.Dataset):
 		self.fnames = []
 		self.boxes = []
 		self.labels = []
-		self.small_threshold = 10./self.image_size
+		self.small_threshold = 10./self.image_size  # face that small than threshold will be ignored
 		self.data_encoder = DataEncoder()
 
 		with open(list_file) as f:
@@ -45,9 +45,9 @@ class ListDataset(data.Dataset):
 				y = float(splited[3+5*i])
 				w = float(splited[4+5*i])
 				h = float(splited[5+5*i])
-				c = splited[6+5*i]
+				c = int(splited[6+5*i])
 				box.append([x,y,x+w,y+h])
-				label.append(int(c))
+				label.append(c)
 			self.boxes.append(torch.Tensor(box))
 			self.labels.append(torch.LongTensor(label))
 		self.num_samples = len(self.boxes)
@@ -55,6 +55,8 @@ class ListDataset(data.Dataset):
 	def __getitem__(self,idx):
 		fname = self.fnames[idx]
 		img = cv2.imread(os.path.join(self.root+fname))
+		assert img is not None
+		
 		boxes = self.boxes[idx].clone()
 		labels = self.labels[idx].clone()
 

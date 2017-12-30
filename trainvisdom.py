@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import torch
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
@@ -14,42 +14,37 @@ import visdom
 import numpy as np
 
 use_gpu = torch.cuda.is_available()
+file_root = os.path.expanduser('~/codedata/aflw/')
 
-file_root = '/home/lxg/codedata/aflw/'
-learning_rate = 0.0001
+learning_rate = 0.001
 num_epochs = 300
 batch_size = 32
+
 net = FaceBox()
-
-net.load_state_dict(torch.load('weight/faceboxes.pt'))
-
-print(net)
-print('load pre-trined model')
-print('cuda', torch.cuda.current_device(), torch.cuda.device_count())
-
-criterion = MultiBoxLoss()
 if use_gpu:
     net.cuda()
 
-net.train()
+print('load model...')
+# net.load_state_dict(torch.load('weight/faceboxes.pt'))
+
+criterion = MultiBoxLoss()
+
 # optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, weight_decay=0.0003)
 optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate, weight_decay=1e-4)
 
-train_dataset = ListDataset(root=file_root,list_file='box_label.txt',train=True,transform = [transforms.ToTensor()] )
+train_dataset = ListDataset(root=file_root,list_file='label/box_label.txt',train=True,transform = [transforms.ToTensor()] )
 train_loader = DataLoader(train_dataset,batch_size=batch_size,shuffle=True,num_workers=5)
 print('the dataset has %d images' % (len(train_dataset)))
 print('the batch_size is %d' % (batch_size))
-logfile = open('log.txt', 'wa')
 
 num_iter = 0
 vis = visdom.Visdom()
 win = vis.line(Y=np.array([0]), X=np.array([0]))
 
+net.train()
 for epoch in range(num_epochs):
-    if epoch == 190:
-        learning_rate=0.0001
-    if epoch == 250:
-        learning_rate=0.00001
+    if epoch == 190 or epoch == 250:
+        learning_rate *= 0.1
     for param_group in optimizer.param_groups:
         param_group['lr'] = learning_rate
     
@@ -79,9 +74,10 @@ for epoch in range(num_epochs):
             vis.line(Y=np.array([total_loss / (i+1)]), X=np.array([num_iter]), 
                     win=win,
                     update='append')
-        
-    logfile.writelines(str(epoch) + '\t' + str(total_loss / (len(train_dataset)/batch_size)) + '\n')  
-    logfile.flush()      
+    
+    if not os.path.exists('weight/'):
+        os.mkdir('weight')  
+    print('saving model ...')  
     torch.save(net.state_dict(),'weight/faceboxes.pt')
     
 

@@ -5,7 +5,6 @@ import math
 import itertools
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 
 class DataEncoder:
 	def __init__(self):
@@ -158,7 +157,7 @@ class DataEncoder:
 		#print(boxes,classes)
 		default_boxes = self.default_boxes #[21824,4]
 		num_default_boxes = default_boxes.size(0)
-		num_obj=boxes.size(0)#人脸个数
+		num_obj=boxes.size(0)  #人脸个数
 		#print('num_faces {}'.format(num_obj))
 		iou = self.iou(
 			boxes,

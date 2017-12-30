@@ -44,7 +44,7 @@ class Inception(nn.Module):
 class FaceBox(nn.Module):
 	input_size = 1024
 	def __init__(self):
-		super(FaceBox,self).__init__()
+		super(FaceBox, self).__init__()
 
 		#model
 		self.conv1 = nn.Conv2d(3,24,kernel_size=7,stride=4,padding=3)

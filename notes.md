@@ -47,7 +47,7 @@ loc_loss:2.315195 conf_loss:2.261710, pos_num:192
 Epoch [10/50], Iter [735/1677] Loss: 4.5769, average_loss: 4.5744
 
 
-# 升级
+# adjust
 - 修改1  
 复现时，2倍致密是原scale的1/4，是2倍scale的anchor的1/8，写成了1/4，已更改
 - 修改2  
