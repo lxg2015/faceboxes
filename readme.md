@@ -33,8 +33,8 @@ path/image_name.jpg num_face x y w h 1 x y w h 1
 ```
 
 ## Result
-![face1](picture/img_416.jpg)
-![face2](picture/img_463.jpg)
+![face1](picture/img_416_result.jpg)
+![face2](picture/img_463_result.jpg)
 
 ## Fddb
 和原论文的结果有些差距，主要问题可能是出现在数据增强部分。
