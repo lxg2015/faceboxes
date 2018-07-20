@@ -8,22 +8,36 @@ from torch.autograd import Variable
 from multibox_layer import MultiBoxLayer
 
 
-class CReLU(nn.Module):
-	def __init__(self):
-		super(CReLU, self).__init__()
-	def forward(self, input):
-		return torch.cat((F.relu(input), F.relu(-input)), 1)
+def conv_bn_relu(in_channels,out_channels,kernel_size,stride=1,padding=0):
+    return nn.Sequential(
+        nn.Conv2d(in_channels,out_channels,kernel_size=kernel_size,padding=padding,stride=stride),
+        nn.BatchNorm2d(out_channels),
+        nn.ReLU(True)
+    )
+
+# class CReLU(nn.Module):
+# 	def __init__(self):
+# 		super(CReLU, self).__init__()
+# 	def forward(self, input):
+# 		return torch.cat((F.relu(input), F.relu(-input)), 1)
 
 class Inception(nn.Module):
 	def __init__(self):
 		super(Inception,self).__init__()
-		self.conv1 = nn.Conv2d(128,32,kernel_size=1)
-		self.conv2 = nn.Conv2d(128,32,kernel_size=1)
-		self.conv3 = nn.Conv2d(128,24,kernel_size=1)
-		self.conv4 = nn.Conv2d(24,32,kernel_size=3,padding=1)
-		self.conv5 = nn.Conv2d(128,24,kernel_size=1)
-		self.conv6 = nn.Conv2d(24,32,kernel_size=3,padding=1)
-		self.conv7 = nn.Conv2d(32,32,kernel_size=3,padding=1)
+		# self.conv1 = nn.Conv2d(128,32,kernel_size=1)
+		self.conv1 = conv_bn_relu(128,32,1)
+		# self.conv2 = nn.Conv2d(128,32,kernel_size=1)
+		self.conv2 = conv_bn_relu(128,32,1)
+		# self.conv3 = nn.Conv2d(128,24,kernel_size=1)
+		self.conv3 = conv_bn_relu(128,24,1)
+		# self.conv4 = nn.Conv2d(24,32,kernel_size=3,padding=1)
+		self.conv4 = conv_bn_relu(24,32,3,padding=1)
+		# self.conv5 = nn.Conv2d(128,24,kernel_size=1)
+		self.conv5 = conv_bn_relu(128,24,1)
+		# self.conv6 = nn.Conv2d(24,32,kernel_size=3,padding=1)
+		self.conv6 = conv_bn_relu(24,32,3,padding=1)
+		# self.conv7 = nn.Conv2d(32,32,kernel_size=3,padding=1)
+		self.conv7 = conv_bn_relu(32,32,3,padding=1)
 	def forward(self,x):
 		x1 = self.conv1(x)
 		
@@ -48,16 +62,22 @@ class FaceBox(nn.Module):
 
 		#model
 		self.conv1 = nn.Conv2d(3,24,kernel_size=7,stride=4,padding=3)
+		self.bn1 = nn.BatchNorm2d(24)
 		self.conv2 = nn.Conv2d(48,64,kernel_size=5,stride=2,padding=2)
+		self.bn2 = nn.BatchNorm2d(64)
 
 		self.inception1 = Inception()
 		self.inception2 = Inception()
 		self.inception3 = Inception()
 
-		self.conv3_1 = nn.Conv2d(128,128,kernel_size=1)
-		self.conv3_2 = nn.Conv2d(128,256,kernel_size=3,stride=2,padding=1)
-		self.conv4_1 = nn.Conv2d(256,128,kernel_size=1)
-		self.conv4_2 = nn.Conv2d(128,256,kernel_size=3,stride=2,padding=1)
+		# self.conv3_1 = nn.Conv2d(128,128,kernel_size=1)
+		self.conv3_1 = conv_bn_relu(128,128,1)
+        # self.conv3_2 = nn.Conv2d(128,256,kernel_size=3,stride=2,padding=1)
+		self.conv3_2 = conv_bn_relu(128,256,3,2,1)
+        # self.conv4_1 = nn.Conv2d(256,128,kernel_size=1)
+		self.conv4_1 = conv_bn_relu(256,128,1)
+        # self.conv4_2 = nn.Conv2d(128,256,kernel_size=3,stride=2,padding=1)
+		self.conv4_2 = conv_bn_relu(128,256,3,2,1)
 
 		self.multilbox = MultiBoxLayer()
 
@@ -65,11 +85,13 @@ class FaceBox(nn.Module):
 		hs = []
 		
 		x = self.conv1(x)
-		x = torch.cat((F.relu(x), F.relu(-x)),1)
+		x = self.bn1(x)
+		x = F.relu(torch.cat([x, -x], 1)) #C.Relu
 		
 		x = F.max_pool2d(x,kernel_size=3,stride=2,padding=1)
 		x = self.conv2(x)
-		x = torch.cat((F.relu(x), F.relu(-x)),1)
+		x = self.bn2(x)
+		x = F.relu(torch.cat([x, -x], 1)) #C.Relu
 		
 		x = F.max_pool2d(x,kernel_size=3,stride=2,padding=1)
 		x = self.inception1(x)
@@ -93,7 +115,7 @@ class FaceBox(nn.Module):
 
 if __name__ == '__main__':
 	model = FaceBox()
-	data = Variable(torch.randn(1,3,512,512)) 
+	data = Variable(torch.randn(1,3,1024,1024)) 
 	loc, conf = model(data)
 	print('loc', loc.size())
 	print('conf', conf.size())

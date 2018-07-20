@@ -14,11 +14,11 @@ import visdom
 import numpy as np
 
 use_gpu = torch.cuda.is_available()
-file_root = os.path.expanduser('~/codedata/aflw/')
+file_root = '/home/lxg/codedata/'
 
 learning_rate = 0.001
 num_epochs = 300
-batch_size = 32
+batch_size = 64
 
 net = FaceBox()
 if use_gpu:
@@ -67,7 +67,7 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if (i+1) % 50 == 0:
+        if (i+1) % 5 == 0:
             print ('Epoch [%d/%d], Iter [%d/%d] Loss: %.4f, average_loss: %.4f' 
             %(epoch+1, num_epochs, i+1, len(train_loader), loss.data[0], total_loss / (i+1)))
             num_iter = num_iter + 1

@@ -54,6 +54,7 @@ class ListDataset(data.Dataset):
 
 	def __getitem__(self,idx):
 		fname = self.fnames[idx]
+		# print(os.path.join(self.root+fname))
 		img = cv2.imread(os.path.join(self.root+fname))
 		assert img is not None
 		
