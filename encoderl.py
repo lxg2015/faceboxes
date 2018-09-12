@@ -254,7 +254,7 @@ class DataEncoder:
 
 		max_conf, labels = conf.max(1) #[21842,1]
 		# print(max_conf)
-		print('labels', labels.long().sum())
+		# print('labels', labels.long().sum())
 		if labels.long().sum() is 0:
 			sconf, slabel = conf.max(0)
 			max_conf[slabel[0:5]] = sconf[0:5]

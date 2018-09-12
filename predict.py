@@ -5,14 +5,28 @@ import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
 import cv2
+from tqdm import tqdm
 print('opencv version', cv2.__version__)
+
+use_gpu = True
 
 def detect(im):
     im = cv2.resize(im, (1024,1024))
     im_tensor = torch.from_numpy(im.transpose((2,0,1)))
     im_tensor = im_tensor.float().div(255)
-    print(im_tensor.shape)
+    # print(im_tensor.shape)
     loc, conf = net(Variable(torch.unsqueeze(im_tensor, 0), volatile=True))
+    boxes, labels, probs = data_encoder.decode(loc.data.squeeze(0),
+                                                F.softmax(conf.squeeze(0)).data)
+    return boxes, probs
+
+def detect_gpu(im):
+    im = cv2.resize(im, (1024,1024))
+    im_tensor = torch.from_numpy(im.transpose((2,0,1)))
+    im_tensor = im_tensor.float().div(255)
+    # print(im_tensor.shape)
+    loc, conf = net(Variable(torch.unsqueeze(im_tensor, 0), volatile=True).cuda())
+    loc, conf = loc.cpu(), conf.cpu()
     boxes, labels, probs = data_encoder.decode(loc.data.squeeze(0),
                                                 F.softmax(conf.squeeze(0)).data)
     return boxes, probs
@@ -56,10 +70,10 @@ def testIm(file):
         y1 = int(box[1]*h)
         y2 = int(box[3]*h)
         print(x1, y1, x2, y2, w, h)
-        cv2.rectangle(im,(x1,y1+4),(x2,y2),(0,255,0),2)
-        cv2.putText(im, str(probs[i]), (x1,y1), font, 0.4, (0,255,0))
-    cv2.imshow('photo', im)
-    cv2.waitKey(0)
+        cv2.rectangle(im,(x1,y1+4),(x2,y2),(0,0,255),2)
+        cv2.putText(im, str(round(probs[i],2)), (x1,y1), font, 0.4, (0,0,255))
+    cv2.imwrite('photo.jpg', im)
+    # cv2.waitKey(0)
     return im
 
 def testImList(path, file_name):
@@ -76,10 +90,10 @@ def saveFddbData(path, file_name):
     '''
     with open(path+file_name) as f:
         file_list = f.readlines()
-    f_write = open(path+'predict.txt', 'w')
+    f_write = open('predict.txt', 'w')
     
     image_num = 0
-    for item in file_list:
+    for item in tqdm(file_list):
         item = item.strip()
         if not ('/' in item):
             continue
@@ -89,10 +103,13 @@ def saveFddbData(path, file_name):
             print('can not open image', item)
             return
         h,w,_ = im.shape
-        boxes, probs = detect(im)
+        if use_gpu:
+            boxes, probs = detect_gpu(im)
+        else:
+            boxes, probs = detect(im)
         f_write.write(item+'\n')
         f_write.write(str(boxes.size(0))+'\n')
-        print('image_num', image_num, 'box_num', boxes.size(0))
+        # print('image_num', image_num, 'box_num', boxes.size(0))
         for i, (box) in enumerate(boxes):
             x1 = box[0]*w
             x2 = box[2]*w
@@ -115,6 +132,8 @@ if __name__ == '__main__':
     net = FaceBox()
     net.load_state_dict(torch.load('weight/faceboxes.pt', map_location=lambda storage, loc:storage))
     
+    if use_gpu:
+        net.cuda()
     net.eval()
     data_encoder = DataEncoder()
 
@@ -132,7 +151,7 @@ if __name__ == '__main__':
     # given image path, predict and show
     fddb_path = "/home/lxg/codedata/fddb/2002/07/19/big/"
     picture = 'img_463.jpg'
-    # im = testIm(fddb_path + picture)
+    im = testIm(fddb_path + picture)
     # cv2.imwrite('picture/'+picture, im)
 
     # given image file list, predict and show
@@ -143,5 +162,5 @@ if __name__ == '__main__':
     # get fddb preddict and write them to predict.txt
     path = '/home/lxg/codedata/fddb/'
     file_name = 'fddb.txt'
-    saveFddbData(path, file_name)
+    # saveFddbData(path, file_name)
     # getFddbList(path, file_name)
