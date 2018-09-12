@@ -5,7 +5,7 @@ Faceboxes is a SSD style object detector, it is designed for fast face detect, h
 
 ## update
 
-I forked from [lxg2015](https://github.com/lxg2015), we did it together before, now i want to update something
+<!-- I forked from [lxg2015](https://github.com/lxg2015), we did it together before, now i want to update something -->
 
 1. Better network, our convolution module should be con_bn_relu like, not just conv.
 
